@@ -19,6 +19,7 @@ private:
     cv::Size size = cv::Size(480, 480);
     std::vector<cv::Mat> preprocess(cv::Mat &frame);
     cv::Rect postProcess(std::vector<cv::Mat> &outs);
+    cv::Rect closestDetection(std::vector<cv::Rect> &detections);
 
 public:
     YoloDetektor(std::string &cfg, std::string &weights);

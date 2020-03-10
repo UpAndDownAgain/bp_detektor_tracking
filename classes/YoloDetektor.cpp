@@ -17,7 +17,6 @@ cv::Rect2d YoloDetektor::detectObject(cv::Mat &frame) {
     auto detections = preprocess(frame);
 
 
-
 }
 
 std::vector<cv::Mat> YoloDetektor::preprocess(cv::Mat &frame) {
@@ -47,4 +46,21 @@ cv::Rect YoloDetektor::postProcess(std::vector<cv::Mat> &outs) {
             }
         }
     }
+    return closestDetection(boxes);
+}
+
+cv::Rect YoloDetektor::closestDetection(std::vector<cv::Rect> &detections) {
+    cv::Rect closestDetection;
+    int closestDetectArea = -1;
+
+    for(auto &box : detections){
+        int area = box.width * box.height;
+        if(area > closestDetectArea){
+            closestDetectArea = area;
+            closestDetection = box;
+        }
+    }
+    return closestDetection;
+
+    return cv::Rect();
 }
