@@ -6,5 +6,5 @@ set(CMAKE_CXX_STANDARD 11)
 
 find_package(OpenCV REQUIRED)
 
-add_executable(bp_detektor_tracking main.cpp)
+add_executable(bp_detektor_tracking main.cpp classes/YoloDetektor.cpp classes/YoloDetektor.h)
 target_link_libraries(bp_detektor_tracking ${OpenCV_LIBS})
