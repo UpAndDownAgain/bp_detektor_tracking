@@ -28,6 +28,7 @@ int main(int argc, char **argv) {
         if(frame.empty()){
             break;
         }
+
         cv::resize(frame, frame, cv::Size(), scale, scale, cv::INTER_AREA);
         cv::imshow("Video", frame);
         int keyPress = cv::waitKey(1);
