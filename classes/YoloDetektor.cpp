@@ -15,6 +15,8 @@ cv::Rect2d YoloDetektor::detectObject(cv::Mat &frame) {
     std::vector<cv::Rect> boxes;
     std::vector<double> confidences;
     auto detections = preprocess(frame);
+    cv::Rect detection = postProcess(frame, detections);
+
 
 
 }
@@ -30,18 +32,32 @@ std::vector<cv::Mat> YoloDetektor::preprocess(cv::Mat &frame) {
     return outputs;
 }
 
-cv::Rect YoloDetektor::postProcess(std::vector<cv::Mat> &outs) {
+cv::Rect YoloDetektor::postProcess(cv::Mat &frame, std::vector<cv::Mat> &outs) {
     std::vector<cv::Rect> boxes;
     std::vector<double> confidences;
+    std::vector<int> outLayers = net.getUnconnectedOutLayers();
+    std::vector<int> classIDs;
+    std::string outLayerType = net.getLayer(outLayers[0])->type;
 
     if(!outs.empty()){
-        for(auto &item : outs){
-            auto *data = (float*) item.data;
+        for(auto &i : outs){
+            auto *data = (float*) i.data;
 
-            for(size_t i = 0; i < item.total(); ++i){
-                double conf = data[i+2];
-                if(conf > threshold){
+            for(size_t j = 0; j < i.rows; ++j, data += i.cols){
+                cv::Mat scores = i.row(j).colRange(5,i.cols);
+                cv::Point classIdPoint;
+                double confidence;
+                cv::minMaxLoc(scores, nullptr, &confidence, nullptr, &classIdPoint);
 
+                if(confidence > threshold){
+                    int centerX = (int)(data[0] * frame.cols);
+                    int centerY = (int)(data[1] * frame.rows);
+                    int width = (int)(data[2] * frame.cols);
+                    int height = (int)(data[3] * frame.rows);
+                    int left = centerX - width / 2;
+                    int top = centerY - height / 2;
+
+                    boxes.emplace_back(left, top, width, height);
                 }
             }
         }
@@ -61,6 +77,4 @@ cv::Rect YoloDetektor::closestDetection(std::vector<cv::Rect> &detections) {
         }
     }
     return closestDetection;
-
-    return cv::Rect();
 }
