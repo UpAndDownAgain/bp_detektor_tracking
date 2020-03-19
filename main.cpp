@@ -7,6 +7,8 @@
 
 #include "classes/YoloDetektor.h"
 
+
+
 int main(int argc, char **argv) {
 
     std::cout << "OpenCV ver: " << CV_VERSION << std::endl;
@@ -27,6 +29,7 @@ int main(int argc, char **argv) {
     auto* detektor = new YoloDetektor(argv[2], argv[3]);
     cv::Ptr<cv::Tracker> tracker = cv::TrackerKCF::create();
 
+    std::vector<cv::Point> barPath;
     bool isTrackerInitialized = false;
     cv::Rect2d detection;
     cv::Mat frame;
@@ -54,6 +57,11 @@ int main(int argc, char **argv) {
                 tracker->init(frame, detection);
             }
         }
+        barPath.emplace_back(cv::Point(detection.x + (detection.width/2), detection.y + (detection.height /2)));
+
+        for(size_t i = 1; i < barPath.size(); ++i){
+            cv::line(frame, barPath[i-1], barPath[i], cv::Scalar(255,255,0), 4);
+        }
 
         cv::rectangle(frame, detection, cv::Scalar(255,0,255));
 
@@ -66,7 +74,9 @@ int main(int argc, char **argv) {
         }
     }
 
+    videoCapture.release();
     delete detektor;
+    delete tracker;
 
     return 0;
 }
