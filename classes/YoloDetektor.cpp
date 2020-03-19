@@ -4,40 +4,32 @@
 
 #include "YoloDetektor.h"
 
-YoloDetektor::YoloDetektor(std::string &cfg, std::string &weights) {
+YoloDetektor::YoloDetektor(const std::string &cfg,const std::string &weights) {
     net = cv::dnn::readNetFromDarknet(cfg, weights);
     net.setPreferableBackend(cv::dnn::DNN_BACKEND_OPENCV);
     net.setPreferableTarget(cv::dnn::DNN_TARGET_CPU);
+    outNames = net.getUnconnectedOutLayersNames();
 }
 
 cv::Rect2d YoloDetektor::detectObject(cv::Mat &frame) {
-
-    std::vector<cv::Rect> boxes;
-    std::vector<double> confidences;
     auto detections = preprocess(frame);
-    cv::Rect detection = postProcess(frame, detections);
-
-
-
+    return  postProcess(frame, detections);
 }
 
 std::vector<cv::Mat> YoloDetektor::preprocess(cv::Mat &frame) {
     std::vector<cv::Mat> outputs;
     cv::Mat blob;
     cv::dnn::blobFromImage(frame, blob, scaleFactor, size,
-                           cv::Scalar(0,0,0), true, false), CV_8U;
+                           cv::Scalar(0,0,0),
+                           true, false);
 
     net.setInput(blob);
-    net.forward(outputs);
+    net.forward(outputs, outNames);
     return outputs;
 }
 
 cv::Rect YoloDetektor::postProcess(cv::Mat &frame, std::vector<cv::Mat> &outs) {
     std::vector<cv::Rect> boxes;
-    std::vector<double> confidences;
-    std::vector<int> outLayers = net.getUnconnectedOutLayers();
-    std::vector<int> classIDs;
-    std::string outLayerType = net.getLayer(outLayers[0])->type;
 
     if(!outs.empty()){
         for(auto &i : outs){
