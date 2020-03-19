@@ -3,6 +3,7 @@
 #include <opencv2/core.hpp>
 #include <opencv2/videoio.hpp>
 #include <opencv2/highgui.hpp>
+#include <opencv2/tracking.hpp>
 
 #include "classes/YoloDetektor.h"
 
@@ -22,10 +23,15 @@ int main(int argc, char **argv) {
         return -1;
     }
     cv::namedWindow("Video", cv::WINDOW_GUI_NORMAL);
-    auto* detektor = new YoloDetektor(argv[2], argv[3]);
 
+    auto* detektor = new YoloDetektor(argv[2], argv[3]);
+    cv::Ptr<cv::Tracker> tracker = cv::TrackerKCF::create();
+
+    bool isTrackerInitialized = false;
+    cv::Rect2d detection;
     cv::Mat frame;
     double scale = 640.0 / videoCapture.get(cv::CAP_PROP_FRAME_HEIGHT);
+
     while(videoCapture.read(frame)){
         if(frame.empty()){
             break;
@@ -34,11 +40,23 @@ int main(int argc, char **argv) {
         std::cout << "Frame nr. " << ++counter << std::endl;
 
         cv::resize(frame, frame, cv::Size(), scale, scale, cv::INTER_AREA);
-        auto detection = detektor->detectObject(frame);
 
-        if(!detection.empty()){
-            cv::rectangle(frame, detection, cv::Scalar(255,0,255));
+        if(!isTrackerInitialized) {
+            detection = detektor->detectObject(frame);
+            tracker->init(frame, detection);
+            isTrackerInitialized = true;
+        }else{
+            bool ok = tracker->update(frame, detection);
+
+            if(!ok){
+                std::cout << "Tracker failed" << std::endl;
+                detection = detektor->detectObject(frame);
+                tracker->init(frame, detection);
+            }
         }
+
+        cv::rectangle(frame, detection, cv::Scalar(255,0,255));
+
 
         cv::imshow("Video", frame);
 
