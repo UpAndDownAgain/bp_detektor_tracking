@@ -16,7 +16,7 @@ private:
     double threshold;
     cv::dnn::Net net;
     double scaleFactor = 1.0/255;
-    cv::Size size = cv::Size(416, 416);
+    cv::Size size = cv::Size(416, 416); //hodnota pro kterou je nastaveny yolo config
     std::vector<cv::Mat> preprocess(cv::Mat &frame);
     cv::Rect postProcess(cv::Mat &frame, std::vector<cv::Mat> &outs);
     cv::Rect closestDetection(std::vector<cv::Rect> &detections);

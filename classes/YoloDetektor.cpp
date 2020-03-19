@@ -17,8 +17,9 @@ cv::Rect2d YoloDetektor::detectObject(cv::Mat &frame) {
 }
 
 std::vector<cv::Mat> YoloDetektor::preprocess(cv::Mat &frame) {
-    std::vector<cv::Mat> outputs;
-    cv::Mat blob;
+    std::vector<cv::Mat> outputs; //vystupy detekce
+    cv::Mat blob; //predpripraveny snimek pro detektor
+
     cv::dnn::blobFromImage(frame, blob, scaleFactor, size,
                            cv::Scalar(0,0,0),
                            true, false);
@@ -29,12 +30,13 @@ std::vector<cv::Mat> YoloDetektor::preprocess(cv::Mat &frame) {
 }
 
 cv::Rect YoloDetektor::postProcess(cv::Mat &frame, std::vector<cv::Mat> &outs) {
-    std::vector<cv::Rect> boxes;
+    std::vector<cv::Rect> boxes; //ohranicujici boxy detekci s vyssi jistotou nez je threshold
 
     if(!outs.empty()){
         for(auto &i : outs){
             auto *data = (float*) i.data;
-
+            //projde jednotlive vystupy detektoru
+            //pokud je jistoty vyssi nez detekce vytvori ohranicujici box a vlozi do boxes
             for(size_t j = 0; j < i.rows; ++j, data += i.cols){
                 cv::Mat scores = i.row(j).colRange(5,i.cols);
                 cv::Point classIdPoint;
@@ -56,7 +58,9 @@ cv::Rect YoloDetektor::postProcess(cv::Mat &frame, std::vector<cv::Mat> &outs) {
     }
     return closestDetection(boxes);
 }
-
+/*
+ * ponechani nejblizsi detekce, jako nejblizsi detekce je povazovana detekce s ohranicujicim boxem s nejvetsi plochou
+ */
 cv::Rect YoloDetektor::closestDetection(std::vector<cv::Rect> &detections) {
     cv::Rect closestDetection;
     int closestDetectArea = -1;

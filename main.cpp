@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
 
     while(videoCapture.read(frame)){
         if(frame.empty()){
-            break;
+            break; //konec videa
         }
 
         std::cout << "Frame nr. " << ++counter << std::endl;
@@ -45,6 +45,7 @@ int main(int argc, char **argv) {
         cv::resize(frame, frame, cv::Size(), scale, scale, cv::INTER_AREA);
 
         if(!isTrackerInitialized) {
+            //uvodni frame inicializace trackeru pomoci detektoru
             detection = detektor->detectObject(frame);
             tracker->init(frame, detection);
             isTrackerInitialized = true;
@@ -52,17 +53,21 @@ int main(int argc, char **argv) {
             bool ok = tracker->update(frame, detection);
 
             if(!ok){
+                //tracker selhal-> nova detekce pomoci detektoru
                 std::cout << "Tracker failed" << std::endl;
                 detection = detektor->detectObject(frame);
                 tracker->init(frame, detection);
             }
         }
+        //pridani bodu drahy osy jako prostredku ohranicujiciho boxu
         barPath.emplace_back(cv::Point(detection.x + (detection.width/2), detection.y + (detection.height /2)));
 
+        //vykresleni drahy
         for(size_t i = 1; i < barPath.size(); ++i){
             cv::line(frame, barPath[i-1], barPath[i], cv::Scalar(255,255,0), 4);
         }
 
+        //vykresleni boxu ohranicujici detekci
         cv::rectangle(frame, detection, cv::Scalar(255,0,255));
 
 
