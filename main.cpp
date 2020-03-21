@@ -19,11 +19,21 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    cv::VideoCapture videoCapture(argv[1]);
+    std::string inFileName = argv[1];
+
+    cv::VideoCapture videoCapture(inFileName);
+
     if(!videoCapture.isOpened()){
         std::cerr << "nelze otevrit video" << std::endl;
         return -1;
     }
+
+    double frameWidth = videoCapture.get(cv::CAP_PROP_FRAME_WIDTH);
+    double frameHeight = videoCapture.get(cv::CAP_PROP_FRAME_HEIGHT);
+    double fps = videoCapture.get(cv::CAP_PROP_FPS);
+    auto fourcc = cv::VideoWriter::fourcc('M', 'J', 'P','G');
+
+
     cv::namedWindow("Video", cv::WINDOW_GUI_NORMAL);
 
     auto* detektor = new YoloDetektor(argv[2], argv[3]);
@@ -33,9 +43,17 @@ int main(int argc, char **argv) {
     bool isTrackerInitialized = false;
     cv::Rect2d detection;
     cv::Mat frame;
-    double scale = 640.0 / videoCapture.get(cv::CAP_PROP_FRAME_HEIGHT);
+    double scale = 640.0 / frameHeight;
 
-    while(videoCapture.read(frame)){
+    cv::VideoWriter videoWriter("output.avi", fourcc, fps, cv::Size(frameWidth * scale,frameHeight * scale));
+
+    if(!videoWriter.isOpened()){
+        std::cerr << "Error zapisu souboru" << std::endl;
+        return -1;
+    }
+
+    while(true){
+        videoCapture >> frame;
         if(frame.empty()){
             break; //konec videa
         }
@@ -70,6 +88,7 @@ int main(int argc, char **argv) {
         //vykresleni boxu ohranicujici detekci
         cv::rectangle(frame, detection, cv::Scalar(255,0,255));
 
+        videoWriter.write(frame);
 
         cv::imshow("Video", frame);
 
@@ -77,11 +96,14 @@ int main(int argc, char **argv) {
         if(keyPress == 27){
             break;
         }
+
     }
 
+    videoWriter.release();
     videoCapture.release();
+    cv::destroyAllWindows();
+    tracker.release();
     delete detektor;
-    delete tracker;
 
     return 0;
 }
