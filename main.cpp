@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
     auto fourcc = cv::VideoWriter::fourcc('M', 'J', 'P','G');
 
 
-    cv::namedWindow("Video", cv::WINDOW_GUI_NORMAL);
+    //cv::namedWindow("Video", cv::WINDOW_GUI_NORMAL);
 
     auto* detektor = new YoloDetektor(argv[2], argv[3]);
     cv::Ptr<cv::Tracker> tracker = cv::TrackerKCF::create();
@@ -89,19 +89,19 @@ int main(int argc, char **argv) {
         cv::rectangle(frame, detection, cv::Scalar(255,0,255));
 
         videoWriter.write(frame);
-
+/*
         cv::imshow("Video", frame);
 
         int keyPress = cv::waitKey(1);
         if(keyPress == 27){
             break;
         }
-
+*/
     }
 
     videoWriter.release();
     videoCapture.release();
-    cv::destroyAllWindows();
+    //cv::destroyAllWindows();
     tracker.release();
     delete detektor;
 
