@@ -65,8 +65,8 @@ int main(int argc, char **argv) {
         if(!isTrackerInitialized) {
             //uvodni frame inicializace trackeru pomoci detektoru
             detection = detektor->detectObject(frame);
-            tracker->init(frame, detection);
-            isTrackerInitialized = true;
+            //tracker->init(frame, detection);
+            //isTrackerInitialized = true;
         }else{
             bool ok = tracker->update(frame, detection);
 
