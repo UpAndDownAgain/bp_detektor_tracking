@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
     //cv::namedWindow("Video", cv::WINDOW_GUI_NORMAL);
 
     auto* detektor = new YoloDetektor(argv[2], argv[3]);
-    cv::Ptr<cv::Tracker> tracker = cv::TrackerKCF::create();
+    cv::Ptr<cv::Tracker> tracker = cv::TrackerMOSSE::create();
 
     std::vector<cv::Point> barPath;
     bool isTrackerInitialized = false;
